@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangalore Home Price Predictor</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: -2;
+        }
+        
+        .background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&auto=format&fit=crop&q=80') center/cover;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.8s ease-out;
+        }
+        
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            border-radius: 24px 24px 0 0;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            color: #2d3748;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-label i {
+            color: #667eea;
+            font-size: 16px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #2d3748;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .input-field:focus {
+            border-color: #667eea;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .radio-item {
+            position: relative;
+        }
+        
+        .radio-item input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .radio-item label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            height: 45px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .radio-item label:hover {
+            border-color: #cbd5e0;
+            background: #edf2f7;
+            transform: translateY(-1px);
+        }
+        
+        .radio-item input:checked + label {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .select-field {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #2d3748;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 16px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 50px;
+        }
+        
+        .select-field:focus {
+            border-color: #667eea;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .predict-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .predict-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .predict-btn:hover::before {
+            left: 100%;
+        }
+        
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .predict-btn:active {
+            transform: translateY(0);
+        }
+        
+        .result-container {
+            margin-top: 25px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
+        }
+        
+        .result-label {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .loading.show {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 480px) {
+            .main-card {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .radio-group {
+                justify-content: center;
+            }
+            
+            .radio-item label {
+                min-width: 45px;
+                height: 40px;
+                font-size: 14px;
+            }
+        }
+        
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .shape:nth-child(2) {
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+        
+        .shape:nth-child(3) {
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <div class="floating-shapes">
+        <div class="shape">🏠</div>
+        <div class="shape">🏡</div>
+        <div class="shape">🏢</div>
+    </div>
+    
+    <div class="container">
+        <div class="main-card">
+            <div class="header">
+                <h1>🏠 Home Price Predictor</h1>
+                <p>Get instant price estimates for Bangalore properties</p>
+            </div>
+            
+            <form>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-ruler-combined"></i>
+                        Area (Square Feet)
+                    </label>
+                    <input type="number" id="uiSqft" class="input-field" placeholder="Enter area in sq ft" value="1000" min="100">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-bed"></i>
+                        BHK (Bedrooms)
+                    </label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bhk-1" name="uiBHK" value="1">
+                            <label for="radio-bhk-1">1</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bhk-2" name="uiBHK" value="2" checked>
+                            <label for="radio-bhk-2">2</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bhk-3" name="uiBHK" value="3">
+                            <label for="radio-bhk-3">3</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bhk-4" name="uiBHK" value="4">
+                            <label for="radio-bhk-4">4</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bhk-5" name="uiBHK" value="5">
+                            <label for="radio-bhk-5">5</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-bath"></i>
+                        Bathrooms
+                    </label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bath-1" name="uiBathrooms" value="1">
+                            <label for="radio-bath-1">1</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bath-2" name="uiBathrooms" value="2" checked>
+                            <label for="radio-bath-2">2</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bath-3" name="uiBathrooms" value="3">
+                            <label for="radio-bath-3">3</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bath-4" name="uiBathrooms" value="4">
+                            <label for="radio-bath-4">4</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="radio-bath-5" name="uiBathrooms" value="5">
+                            <label for="radio-bath-5">5</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Location
+                    </label>
+                    <select id="uiLocations" class="select-field">
+                        <option value="" disabled selected>Choose a Location</option>
+                        <option>Electronic City</option>
+                        <option>Rajaji Nagar</option>
+                        <option>1st block jayanagar</option>
+                        <option>1st phase jp nagar</option>
+                        <option>2nd phase judicial layout</option>
+                        <option>2nd stage nagarbhavi</option>
+                        <option>5th block hbr layout</option>
+                        <option>5th phase jp nagar</option>
+                        <option>6th phase jp nagar</option>
+                        <option>7th phase jp nagar</option>
+                        <option>8th phase jp nagar</option>
+                        <option>9th phase jp nagar</option>
+                        <option>aecs layout</option>
+                        <option>abbigere</option>
+                        <option>akshaya nagar</option>
+                        <option>ambalipura</option>
+                        <option>ambedkar nagar</option>
+                        <option>amruthahalli</option>
+                        <option>anandapura</option>
+                        <option>ananth nagar</option>
+                        <option>anekal</option>
+                        <option>anjanapura</option>
+                        <option>ardendale</option>
+                        <option>arekere</option>
+                        <option>attibele</option>
+                        <option>beml layout</option>
+                        <option>btm 2nd stage</option>
+                        <option>btm layout</option>
+                        <option>babusapalaya</option>
+                        <option>badavala nagar</option>
+                        <option>balagere</option>
+                        <option>banashankari</option>
+                        <option>banashankari stage ii</option>
+                        <option>banashankari stage iii</option>
+                        <option>banashankari stage v</option>
+                        <option>banashankari stage vi</option>
+                        <option>banaswadi</option>
+                        <option>banjara layout</option>
+                        <option>bannerghatta</option>
+                        <option>bannerghatta road</option>
+                        <option>basavangudi</option>
+                        <option>basaveshwara nagar</option>
+                        <option>battarahalli</option>
+                        <option>begur</option>
+                        <option>begur road</option>
+                        <option>bellandur</option>
+                        <option>benson town</option>
+                        <option>bharathi nagar</option>
+                        <option>bhoganhalli</option>
+                        <option>billekahalli</option>
+                        <option>binny pete</option>
+                        <option>bisuvanahalli</option>
+                        <option>bommanahalli</option>
+                        <option>bommasandra</option>
+                        <option>bommasandra industrial area</option>
+                        <option>bommenahalli</option>
+                        <option>brookefield</option>
+                        <option>budigere</option>
+                        <option>cv raman nagar</option>
+                        <option>chamrajpet</option>
+                        <option>chandapura</option>
+                        <option>channasandra</option>
+                        <option>chikka tirupathi</option>
+                        <option>chikkabanavar</option>
+                        <option>chikkalasandra</option>
+                        <option>choodasandra</option>
+                        <option>cooke town</option>
+                        <option>cox town</option>
+                        <option>cunningham road</option>
+                        <option>dasanapura</option>
+                        <option>dasarahalli</option>
+                        <option>devanahalli</option>
+                        <option>devarachikkanahalli</option>
+                        <option>dodda nekkundi</option>
+                        <option>doddaballapur</option>
+                        <option>doddakallasandra</option>
+                        <option>doddathoguru</option>
+                        <option>domlur</option>
+                        <option>dommasandra</option>
+                        <option>epip zone</option>
+                        <option>electronic city</option>
+                        <option>electronic city phase ii</option>
+                        <option>electronics city phase 1</option>
+                        <option>frazer town</option>
+                        <option>gm palaya</option>
+                        <option>garudachar palya</option>
+                        <option>giri nagar</option>
+                        <option>gollarapalya hosahalli</option>
+                        <option>gottigere</option>
+                        <option>green glen layout</option>
+                        <option>gubbalala</option>
+                        <option>gunjur</option>
+                        <option>hal 2nd stage</option>
+                        <option>hbr layout</option>
+                        <option>hrbr layout</option>
+                        <option>hsr layout</option>
+                        <option>haralur road</option>
+                        <option>harlur</option>
+                        <option>hebbal</option>
+                        <option>hebbal kempapura</option>
+                        <option>hegde nagar</option>
+                        <option>hennur</option>
+                        <option>hennur road</option>
+                        <option>hoodi</option>
+                        <option>horamavu agara</option>
+                        <option>horamavu banaswadi</option>
+                        <option>hormavu</option>
+                        <option>hosa road</option>
+                        <option>hosakerehalli</option>
+                        <option>hoskote</option>
+                        <option>hosur road</option>
+                        <option>hulimavu</option>
+                        <option>isro layout</option>
+                        <option>itpl</option>
+                        <option>iblur village</option>
+                        <option>indira nagar</option>
+                        <option>jp nagar</option>
+                        <option>jakkur</option>
+                        <option>jalahalli</option>
+                        <option>jalahalli east</option>
+                        <option>jigani</option>
+                        <option>judicial layout</option>
+                        <option>kr puram</option>
+                        <option>kadubeesanahalli</option>
+                        <option>kadugodi</option>
+                        <option>kaggadasapura</option>
+                        <option>kaggalipura</option>
+                        <option>kaikondrahalli</option>
+                        <option>kalena agrahara</option>
+                        <option>kalyan nagar</option>
+                        <option>kambipura</option>
+                        <option>kammanahalli</option>
+                        <option>kammasandra</option>
+                        <option>kanakapura</option>
+                        <option>kanakpura road</option>
+                        <option>kannamangala</option>
+                        <option>karuna nagar</option>
+                        <option>kasavanhalli</option>
+                        <option>kasturi nagar</option>
+                        <option>kathriguppe</option>
+                        <option>kaval byrasandra</option>
+                        <option>kenchenahalli</option>
+                        <option>kengeri</option>
+                        <option>kengeri satellite town</option>
+                        <option>kereguddadahalli</option>
+                        <option>kodichikkanahalli</option>
+                        <option>kodigehaali</option>
+                        <option>kodigehalli</option>
+                        <option>kodihalli</option>
+                        <option>kogilu</option>
+                        <option>konanakunte</option>
+                        <option>koramangala</option>
+                        <option>kothannur</option>
+                        <option>kothanur</option>
+                        <option>kudlu</option>
+                        <option>kudlu gate</option>
+                        <option>kumaraswami layout</option>
+                        <option>kundalahalli</option>
+                        <option>lb shastri nagar</option>
+                        <option>laggere</option>
+                        <option>lakshminarayana pura</option>
+                        <option>lingadheeranahalli</option>
+                        <option>magadi road</option>
+                        <option>mahadevpura</option>
+                        <option>mahalakshmi layout</option>
+                        <option>mallasandra</option>
+                        <option>malleshpalya</option>
+                        <option>malleshwaram</option>
+                        <option>marathahalli</option>
+                        <option>margondanahalli</option>
+                        <option>marsur</option>
+                        <option>mico layout</option>
+                        <option>munnekollal</option>
+                        <option>murugeshpalya</option>
+                        <option>mysore road</option>
+                        <option>ngr layout</option>
+                        <option>nri layout</option>
+                        <option>nagarbhavi</option>
+                        <option>nagasandra</option>
+                        <option>nagavara</option>
+                        <option>nagavarapalya</option>
+                        <option>narayanapura</option>
+                        <option>neeladri nagar</option>
+                        <option>nehru nagar</option>
+                        <option>ombr layout</option>
+                        <option>old airport road</option>
+                        <option>old madras road</option>
+                        <option>padmanabhanagar</option>
+                        <option>pai layout</option>
+                        <option>panathur</option>
+                        <option>parappana agrahara</option>
+                        <option>pattandur agrahara</option>
+                        <option>poorna pragna layout</option>
+                        <option>prithvi layout</option>
+                        <option>r.t. nagar</option>
+                        <option>rachenahalli</option>
+                        <option>raja rajeshwari nagar</option>
+                        <option>rajaji nagar</option>
+                        <option>rajiv nagar</option>
+                        <option>ramagondanahalli</option>
+                        <option>ramamurthy nagar</option>
+                        <option>rayasandra</option>
+                        <option>sahakara nagar</option>
+                        <option>sanjay nagar</option>
+                        <option>sarakki nagar</option>
+                        <option>sarjapur</option>
+                        <option>sarjapur road</option>
+                        <option>sarjapura - attibele road</option>
+                        <option>sector 2 hsr layout</option>
+                        <option>sector 7 hsr layout</option>
+                        <option>seegehalli</option>
+                        <option>shampura</option>
+                        <option>shivaji nagar</option>
+                        <option>singasandra</option>
+                        <option>somasundara palya</option>
+                        <option>sompura</option>
+                        <option>sonnenahalli</option>
+                        <option>subramanyapura</option>
+                        <option>sultan palaya</option>
+                        <option>tc palaya</option>
+                        <option>talaghattapura</option>
+                        <option>thanisandra</option>
+                        <option>thigalarapalya</option>
+                        <option>thubarahalli</option>
+                        <option>thyagaraja nagar</option>
+                        <option>tindlu</option>
+                        <option>tumkur road</option>
+                        <option>ulsoor</option>
+                        <option>uttarahalli</option>
+                        <option>varthur</option>
+                        <option>varthur road</option>
+                        <option>vasanthapura</option>
+                        <option>vidyaranyapura</option>
+                        <option>vijayanagar</option>
+                        <option>vishveshwarya layout</option>
+                        <option>vishwapriya layout</option>
+                        <option>vittasandra</option>
+                        <option>whitefield</option>
+                        <option>yelachenahalli</option>
+                        <option>yelahanka</option>
+                        <option>yelahanka new town</option>
+                        <option>yelenahalli</option>
+                        <option>yeshwanthpur</option>
+                    </select>
+                </div>
+                
+                <button type="button" class="predict-btn" onclick="onClickedEstimatePrice()">
+                    <i class="fas fa-calculator"></i> Get Price Estimate
+                </button>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <span>Calculating price...</span>
+                </div>
+                
+                <div class="result-container" id="uiEstimatedPrice">
+                    <div class="result-card">
+                        <div class="result-label">Estimated Price</div>
+                        <h2 class="result-value"></h2>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function getBathValue() {
+            var uiBathrooms = document.getElementsByName("uiBathrooms");
+            for(var i in uiBathrooms) {
+                if(uiBathrooms[i].checked) {
+                    return parseInt(i)+1;
+                }
+            }
+            return -1;
+        }
+        
+        function getBHKValue() {
+            var uiBHK = document.getElementsByName("uiBHK");
+            for(var i in uiBHK) {
+                if(uiBHK[i].checked) {
+                    return parseInt(i)+1;
+                }
+            }
+            return -1;
+        }
+        
+        function onClickedEstimatePrice() {
+
+            console.log("Estimate price button clicked");
+            
+            var sqft = document.getElementById("uiSqft");
+            var bhk = getBHKValue();
+            var bathrooms = getBathValue();
+            var location = document.getElementById("uiLocations");
+            var estPrice = document.getElementById("uiEstimatedPrice");
+            var loading = document.getElementById("loading");
+            
+            // Validation
+            if (!sqft.value || sqft.value <= 0) {
+                alert("Please enter a valid area");
+                return;
+            }
+            
+            if (bhk === -1) {
+                alert("Please select BHK");
+                return;
+            }
+        }
